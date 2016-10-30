@@ -1,0 +1,5 @@
+package: github.com/xperimental/knwifimap
+import:
+- package: github.com/spf13/pflag
+- package: github.com/mattn/go-sqlite3
+  version: ^1.1.0
