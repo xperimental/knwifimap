@@ -1,8 +1,8 @@
-.body {
-  height: 100%;
-}
-
 #mapid {
-  min-height: 200px;
-  height: 95%;
+  position: absolute;
+  width: 100vw;
+  height: 100vh;
+  top: 0px;
+  left: 0px;
+  z-index: -1;
 }

@@ -1,5 +1,7 @@
 $(document).ready(function() {
-    var mymap = L.map('mapid').setView([47.68, 9.178287], 13);
+    var mymap = L.map('mapid', {
+        zoomControl: false
+    }).setView([47.68, 9.178287], 13);
 
     // Add OSM tile layer
     var osm = new L.TileLayer(
@@ -23,7 +25,15 @@ $(document).ready(function() {
         "Networks": networks
     };
 
-    L.control.layers(baseLayers, overlays).addTo(mymap);
+    L.control.layers(baseLayers, overlays, {
+        collapsed: false,
+        position: "bottomright"
+    }).addTo(mymap);
+
+    L.control.scale().addTo(mymap);
+    L.control.zoom({
+        position: "bottomleft"
+    }).addTo(mymap);
 
     $.getJSON('query', null, function(data) {
         $.each(data, function(index, network) {
