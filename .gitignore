@@ -1,2 +1,3 @@
-wiglewifi.sqlite
-vendor/
+*.sqlite
+/vendor/
+/knwifimap
