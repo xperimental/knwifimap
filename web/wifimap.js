@@ -5,7 +5,7 @@ $(document).ready(function() {
 
     // Add OSM tile layer
     var osm = new L.TileLayer(
-        'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
         {
             minZoom: 8,
             maxZoom: 18,
