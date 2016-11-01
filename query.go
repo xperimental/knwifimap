@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"strings"
 )
 
 // NetworkMarker contains the information for a map marker.
@@ -14,6 +15,7 @@ type NetworkMarker struct {
 	Latitude  float64 `json:"lat"`
 	Longitude float64 `json:"lon"`
 	Text      string  `json:"text"`
+	Secure    bool    `json:"secure"`
 }
 
 var markerInfoTmpl = `<div class="network">
@@ -46,11 +48,14 @@ func QueryHandler(db *database) http.Handler {
 				continue
 			}
 
+			secure := strings.Contains(net.Capabilities, "[WPA")
+
 			marker := NetworkMarker{
 				Title:     net.SSID,
 				Latitude:  net.BestLatitude,
 				Longitude: net.BestLongitude,
 				Text:      text.String(),
+				Secure:    secure,
 			}
 			markers = append(markers, marker)
 		}
