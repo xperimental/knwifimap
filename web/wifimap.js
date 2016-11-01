@@ -6,19 +6,35 @@ var NetworkIcon = L.Icon.extend({
     }
 });
 
+var hfOpenNetwork = new NetworkIcon({
+    iconUrl: "icons/network-5-open.png"
+});
+
+var hfSecureNetwork = new NetworkIcon({
+    iconUrl: "icons/network-5-secure.png"
+});
+
 var openNetwork = new NetworkIcon({
-    iconUrl: "icons/wireless-open.png"
+    iconUrl: "icons/network-2-open.png"
 });
 
 var secureNetwork = new NetworkIcon({
-    iconUrl: "icons/wireless-secure.png"
+    iconUrl: "icons/network-2-secure.png"
 });
 
-function icon(secure) {
-    if (secure) {
-        return secureNetwork;
+function icon(highFreq, secure) {
+    if (highFreq) {
+        if (secure) {
+            return hfSecureNetwork;
+        } else {
+            return hfOpenNetwork;
+        }
     } else {
-        return openNetwork;
+        if (secure) {
+            return secureNetwork;
+        } else {
+            return openNetwork;
+        }
     }
 }
 
@@ -80,7 +96,7 @@ $(document).ready(function() {
         $.each(data, function(index, network) {
             var marker = L.marker([network.lat, network.lon], {
                 title: network.ssid,
-                icon: icon(network.secure)
+                icon: icon(network.highFreq, network.secure)
             });
             marker.bindPopup(network.text);
 
