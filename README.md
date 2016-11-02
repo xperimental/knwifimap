@@ -31,3 +31,12 @@ CREATE TABLE network (
   bestlon double not null default 0
 );
 ```
+
+## Libraries used
+
+ - [Bootstrap](http://getbootstrap.com/)
+ - [jQuery](http://jquery.com/)
+ - [leaflet.js](http://leafletjs.com/)
+ - [Leaflet.markercluster](https://github.com/Leaflet/Leaflet.markercluster)
+ - [Leaflet.FeatureGroup.SubGroup](https://github.com/ghybs/Leaflet.FeatureGroup.SubGroup)
+ - [leaflet-maskcanvas](https://github.com/domoritz/leaflet-maskcanvas)

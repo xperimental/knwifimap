@@ -38,6 +38,29 @@ function icon(highFreq, secure) {
     }
 }
 
+function download(openNetworks, secureNetworks, coverage) {
+    $.getJSON('query', null, function(data) {
+        var coverPoints = [];
+        $.each(data, function(index, network) {
+            var marker = L.marker([network.lat, network.lon], {
+                title: network.ssid,
+                icon: icon(network.highFreq, network.secure)
+            });
+            marker.bindPopup(network.text);
+
+            if (network.secure) {
+                secureNetworks.addLayer(marker);
+            } else {
+                openNetworks.addLayer(marker);
+            }
+
+            coverPoints.push([network.lat, network.lon]);
+        });
+
+        coverage.setData(coverPoints);
+    });
+}
+
 $(document).ready(function() {
     var mymap = L.map('mapid', {
         zoomControl: false
@@ -66,13 +89,23 @@ $(document).ready(function() {
     var secureNetworks = L.featureGroup.subGroup(clusterGroup, []);
     mymap.addLayer(secureNetworks);
 
+    var coverage = L.TileLayer.maskCanvas({
+        radius: 30,  // radius in pixels or in meters (see useAbsoluteRadius)
+        useAbsoluteRadius: true,  // true: r in meters, false: r in pixels
+        color: '#0F0',  // the color of the layer
+        opacity: 0.5,  // opacity of the not covered area
+        noMask: true,  // true results in normal (filled) circled, instead masked circles
+    });
+    mymap.addLayer(coverage);
+
     var baseLayers = {
         "OpenStreetMap": osm
     };
 
     var overlays = {
         "Open networks": openNetworks,
-        "Secure networks": secureNetworks
+        "Secure networks": secureNetworks,
+        "Coverage": coverage
     };
 
     L.control.layers(baseLayers, overlays, {
@@ -92,19 +125,5 @@ $(document).ready(function() {
         popupAnchor: [0, -29]
     });
 
-    $.getJSON('query', null, function(data) {
-        $.each(data, function(index, network) {
-            var marker = L.marker([network.lat, network.lon], {
-                title: network.ssid,
-                icon: icon(network.highFreq, network.secure)
-            });
-            marker.bindPopup(network.text);
-
-            if (network.secure) {
-                secureNetworks.addLayer(marker);
-            } else {
-                openNetworks.addLayer(marker);
-            }
-        });
-    });
+    download(openNetworks, secureNetworks, coverage);
 })
