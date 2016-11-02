@@ -6,9 +6,15 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 )
+
+type QueryResult struct {
+	Total    int             `json:"total"`
+	Networks []NetworkMarker `json:"networks"`
+}
 
 // NetworkMarker contains the information for a map marker.
 type NetworkMarker struct {
@@ -52,6 +58,8 @@ var markerInfoTmpl = `<table class="table network">
   </tr>
 </table>`
 
+const defaultLimit = "500"
+
 func formatTime(timeEpochMillis int) string {
 	t := time.Unix(int64(timeEpochMillis/1000), 0)
 	return t.UTC().Format(time.RFC3339)
@@ -77,7 +85,27 @@ func QueryHandler(db *database) http.Handler {
 	}
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		networks, err := db.Query()
+		limitStr := r.URL.Query().Get("limit")
+		if len(limitStr) == 0 {
+			limitStr = defaultLimit
+		}
+
+		offsetStr := r.URL.Query().Get("offset")
+		if len(offsetStr) == 0 {
+			offsetStr = "0"
+		}
+
+		limit, err := strconv.Atoi(limitStr)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+		}
+
+		offset, err := strconv.Atoi(offsetStr)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+		}
+
+		networks, err := db.Query(offset, limit)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -104,7 +132,18 @@ func QueryHandler(db *database) http.Handler {
 			markers = append(markers, marker)
 		}
 
-		if err := json.NewEncoder(w).Encode(markers); err != nil {
+		total, err := db.Count()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		result := QueryResult{
+			Total:    total,
+			Networks: markers,
+		}
+
+		if err := json.NewEncoder(w).Encode(result); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}

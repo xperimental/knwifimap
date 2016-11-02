@@ -38,10 +38,9 @@ function icon(highFreq, secure) {
     }
 }
 
-function download(openNetworks, secureNetworks, coverage) {
-    $.getJSON('query', null, function(data) {
-        var coverPoints = [];
-        $.each(data, function(index, network) {
+function download(openNetworks, secureNetworks, coverage, coverPoints, total=1, count=0) {
+    $.getJSON('query?offset=' + count, null, function(data) {
+        $.each(data.networks, function(index, network) {
             var marker = L.marker([network.lat, network.lon], {
                 title: network.ssid,
                 icon: icon(network.highFreq, network.secure)
@@ -58,6 +57,12 @@ function download(openNetworks, secureNetworks, coverage) {
         });
 
         coverage.setData(coverPoints);
+
+        total = data.total;
+        count += data.networks.length;
+        if (count < total && data.networks.length > 0) {
+            download(openNetworks, secureNetworks, coverage, coverPoints, total, count);
+        }
     });
 }
 
@@ -125,5 +130,5 @@ $(document).ready(function() {
         popupAnchor: [0, -29]
     });
 
-    download(openNetworks, secureNetworks, coverage);
+    download(openNetworks, secureNetworks, coverage, []);
 })

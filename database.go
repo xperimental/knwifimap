@@ -42,11 +42,38 @@ func newDatabase(path string) (*database, error) {
 	}, nil
 }
 
-func (db *database) Query() ([]Network, error) {
+const (
+	queryString = "SELECT bssid, ssid, frequency, capabilities, lasttime, lastlat, lastlon, type, bestlevel, bestlat, bestlon FROM network WHERE type = 'W' LIMIT ? OFFSET ?"
+	totalQuery  = "SELECT COUNT(bssid) FROM network WHERE type = 'W'"
+)
+
+func (db *database) Count() (int, error) {
 	db.Lock()
 	defer db.Unlock()
 
-	rows, err := db.conn.Query("SELECT bssid, ssid, frequency, capabilities, lasttime, lastlat, lastlon, type, bestlevel, bestlat, bestlon FROM network WHERE type = 'W'")
+	rows, err := db.conn.Query(totalQuery)
+	if err != nil {
+		return 0, err
+	}
+	defer rows.Close()
+
+	if !rows.Next() {
+		return 0, nil
+	}
+
+	var count int
+	if err := rows.Scan(&count); err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
+func (db *database) Query(offset, limit int) ([]Network, error) {
+	db.Lock()
+	defer db.Unlock()
+
+	rows, err := db.conn.Query(queryString, limit, offset)
 	if err != nil {
 		return []Network{}, err
 	}
